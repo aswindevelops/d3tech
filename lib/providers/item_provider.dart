@@ -15,15 +15,24 @@ class ItemProvider with ChangeNotifier {
   Uint8List? image;
 
   Future getItems() async {
+    // fetching items from local db
     final data = await _localRepository.getItems();
+
+    // generate list of items from list of maps
     items = Item.generateListFromMap(data);
   }
 
   Future addItems() async {
+
+    // generating item class
     var item = Item(
         null, nameController.text, double.parse(priceController.text), image);
 
-    await _localRepository.insertItem(item);
+    // adding item to local db
+    var id = await _localRepository.insertItem(item);
+    item.id = id;
+
+    // adding item to cached items
     items.add(item);
 
     notifyListeners();
@@ -32,11 +41,14 @@ class ItemProvider with ChangeNotifier {
   }
 
   Future updateItems() async {
+    // generate item class
     var item = Item(items[selectedIndex].id, nameController.text,
         double.parse(priceController.text), image);
 
+    // update local db
     await _localRepository.updateItem(item);
 
+    // update cached data
     items.removeAt(selectedIndex);
     items.insert(selectedIndex, item);
 
